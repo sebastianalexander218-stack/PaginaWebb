@@ -1,0 +1,485 @@
+[
+  {
+    "id": 1,
+    "fecha": "2026-06-26 02:53:37",
+    "cliente": "sebastian",
+    "telefono": "918787936",
+    "total": 9.7,
+    "items": [
+      {
+        "nombre": "Manzana",
+        "cantidad": 1,
+        "precio": 3.5
+      },
+      {
+        "nombre": "Plátano",
+        "cantidad": 1,
+        "precio": 2
+      },
+      {
+        "nombre": "Leche Entera",
+        "cantidad": 1,
+        "precio": 4.2
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "fecha": "2026-06-26 03:46:26",
+    "cliente": "alexsander",
+    "telefono": "987456321",
+    "total": 60.5,
+    "items": [
+      {
+        "nombre": "PAPAS LAYS",
+        "cantidad": 1,
+        "precio": 8
+      },
+      {
+        "nombre": "Leche Entera",
+        "cantidad": 1,
+        "precio": 4.2
+      },
+      {
+        "nombre": "Plátano",
+        "cantidad": 5,
+        "precio": 2
+      },
+      {
+        "nombre": "Manzana",
+        "cantidad": 4,
+        "precio": 3.5
+      },
+      {
+        "nombre": "Leche + Avena Integral",
+        "cantidad": 1,
+        "precio": 7.9
+      },
+      {
+        "nombre": "Kilo de Mandarina Fresca",
+        "cantidad": 1,
+        "precio": 2.9
+      },
+      {
+        "nombre": "Detergente + Lavavajillas",
+        "cantidad": 1,
+        "precio": 13.5
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "fecha": "2026-06-26 23:02:48",
+    "cliente": "sebastian",
+    "telefono": "918787936",
+    "total": 52,
+    "items": [
+      {
+        "nombre": "Manzana",
+        "cantidad": 1,
+        "precio": 3.5
+      },
+      {
+        "nombre": "Papaya",
+        "cantidad": 1,
+        "precio": 5.5
+      },
+      {
+        "nombre": "Mango",
+        "cantidad": 3,
+        "precio": 4
+      },
+      {
+        "nombre": "Naranja",
+        "cantidad": 3,
+        "precio": 3
+      },
+      {
+        "nombre": "Uva",
+        "cantidad": 2,
+        "precio": 6.5
+      },
+      {
+        "nombre": "Fresa",
+        "cantidad": 2,
+        "precio": 4.5
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "fecha": "2026-07-02 19:56:13",
+    "cliente": "sebastian",
+    "telefono": "918787936",
+    "total": 16.4,
+    "items": [
+      {
+        "nombre": "Kilo de Mandarina Fresca",
+        "cantidad": 1,
+        "precio": 2.9
+      },
+      {
+        "nombre": "Detergente + Lavavajillas",
+        "cantidad": 1,
+        "precio": 13.5
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "fecha": "2026-07-02 19:58:39",
+    "cliente": "sebastian",
+    "telefono": "918787936",
+    "total": 228.4,
+    "items": [
+      {
+        "nombre": "Manzana",
+        "cantidad": 3,
+        "precio": 3.5
+      },
+      {
+        "nombre": "Plátano",
+        "cantidad": 4,
+        "precio": 2
+      },
+      {
+        "nombre": "Papaya",
+        "cantidad": 2,
+        "precio": 5.5
+      },
+      {
+        "nombre": "Mango",
+        "cantidad": 2,
+        "precio": 4
+      },
+      {
+        "nombre": "Naranja",
+        "cantidad": 3,
+        "precio": 3
+      },
+      {
+        "nombre": "Fresa",
+        "cantidad": 4,
+        "precio": 4.5
+      },
+      {
+        "nombre": "Tomate",
+        "cantidad": 1,
+        "precio": 2.5
+      },
+      {
+        "nombre": "Cebolla",
+        "cantidad": 2,
+        "precio": 1.8
+      },
+      {
+        "nombre": "Zanahoria",
+        "cantidad": 2,
+        "precio": 1.5
+      },
+      {
+        "nombre": "Lechuga",
+        "cantidad": 2,
+        "precio": 1.2
+      },
+      {
+        "nombre": "Beterraga",
+        "cantidad": 2,
+        "precio": 2
+      },
+      {
+        "nombre": "Pimiento",
+        "cantidad": 2,
+        "precio": 2.8
+      },
+      {
+        "nombre": "Espinaca",
+        "cantidad": 3,
+        "precio": 1.5
+      },
+      {
+        "nombre": "Pepino",
+        "cantidad": 2,
+        "precio": 1.5
+      },
+      {
+        "nombre": "Queso Fresco",
+        "cantidad": 6,
+        "precio": 7.5
+      },
+      {
+        "nombre": "Arroz Extra",
+        "cantidad": 3,
+        "precio": 5.5
+      },
+      {
+        "nombre": "Azúcar Rubia",
+        "cantidad": 3,
+        "precio": 3.9
+      },
+      {
+        "nombre": "Leche Evaporada",
+        "cantidad": 3,
+        "precio": 3.8
+      },
+      {
+        "nombre": "Aceite Vegetal",
+        "cantidad": 3,
+        "precio": 8.5
+      },
+      {
+        "nombre": "Fideos Spaghetti",
+        "cantidad": 3,
+        "precio": 3.2
+      },
+      {
+        "nombre": "Sal de Mesa",
+        "cantidad": 3,
+        "precio": 1.2
+      },
+      {
+        "nombre": "Frijoles",
+        "cantidad": 3,
+        "precio": 4
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "fecha": "2026-07-02 19:58:47",
+    "cliente": "sebastian",
+    "telefono": "918787936",
+    "total": 228.4,
+    "items": [
+      {
+        "nombre": "Manzana",
+        "cantidad": 3,
+        "precio": 3.5
+      },
+      {
+        "nombre": "Plátano",
+        "cantidad": 4,
+        "precio": 2
+      },
+      {
+        "nombre": "Papaya",
+        "cantidad": 2,
+        "precio": 5.5
+      },
+      {
+        "nombre": "Mango",
+        "cantidad": 2,
+        "precio": 4
+      },
+      {
+        "nombre": "Naranja",
+        "cantidad": 3,
+        "precio": 3
+      },
+      {
+        "nombre": "Fresa",
+        "cantidad": 4,
+        "precio": 4.5
+      },
+      {
+        "nombre": "Tomate",
+        "cantidad": 1,
+        "precio": 2.5
+      },
+      {
+        "nombre": "Cebolla",
+        "cantidad": 2,
+        "precio": 1.8
+      },
+      {
+        "nombre": "Zanahoria",
+        "cantidad": 2,
+        "precio": 1.5
+      },
+      {
+        "nombre": "Lechuga",
+        "cantidad": 2,
+        "precio": 1.2
+      },
+      {
+        "nombre": "Beterraga",
+        "cantidad": 2,
+        "precio": 2
+      },
+      {
+        "nombre": "Pimiento",
+        "cantidad": 2,
+        "precio": 2.8
+      },
+      {
+        "nombre": "Espinaca",
+        "cantidad": 3,
+        "precio": 1.5
+      },
+      {
+        "nombre": "Pepino",
+        "cantidad": 2,
+        "precio": 1.5
+      },
+      {
+        "nombre": "Queso Fresco",
+        "cantidad": 6,
+        "precio": 7.5
+      },
+      {
+        "nombre": "Arroz Extra",
+        "cantidad": 3,
+        "precio": 5.5
+      },
+      {
+        "nombre": "Azúcar Rubia",
+        "cantidad": 3,
+        "precio": 3.9
+      },
+      {
+        "nombre": "Leche Evaporada",
+        "cantidad": 3,
+        "precio": 3.8
+      },
+      {
+        "nombre": "Aceite Vegetal",
+        "cantidad": 3,
+        "precio": 8.5
+      },
+      {
+        "nombre": "Fideos Spaghetti",
+        "cantidad": 3,
+        "precio": 3.2
+      },
+      {
+        "nombre": "Sal de Mesa",
+        "cantidad": 3,
+        "precio": 1.2
+      },
+      {
+        "nombre": "Frijoles",
+        "cantidad": 3,
+        "precio": 4
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "fecha": "2026-07-02 19:58:59",
+    "cliente": "sebastian",
+    "telefono": "918787936",
+    "total": 228.4,
+    "items": [
+      {
+        "nombre": "Manzana",
+        "cantidad": 3,
+        "precio": 3.5
+      },
+      {
+        "nombre": "Plátano",
+        "cantidad": 4,
+        "precio": 2
+      },
+      {
+        "nombre": "Papaya",
+        "cantidad": 2,
+        "precio": 5.5
+      },
+      {
+        "nombre": "Mango",
+        "cantidad": 2,
+        "precio": 4
+      },
+      {
+        "nombre": "Naranja",
+        "cantidad": 3,
+        "precio": 3
+      },
+      {
+        "nombre": "Fresa",
+        "cantidad": 4,
+        "precio": 4.5
+      },
+      {
+        "nombre": "Tomate",
+        "cantidad": 1,
+        "precio": 2.5
+      },
+      {
+        "nombre": "Cebolla",
+        "cantidad": 2,
+        "precio": 1.8
+      },
+      {
+        "nombre": "Zanahoria",
+        "cantidad": 2,
+        "precio": 1.5
+      },
+      {
+        "nombre": "Lechuga",
+        "cantidad": 2,
+        "precio": 1.2
+      },
+      {
+        "nombre": "Beterraga",
+        "cantidad": 2,
+        "precio": 2
+      },
+      {
+        "nombre": "Pimiento",
+        "cantidad": 2,
+        "precio": 2.8
+      },
+      {
+        "nombre": "Espinaca",
+        "cantidad": 3,
+        "precio": 1.5
+      },
+      {
+        "nombre": "Pepino",
+        "cantidad": 2,
+        "precio": 1.5
+      },
+      {
+        "nombre": "Queso Fresco",
+        "cantidad": 6,
+        "precio": 7.5
+      },
+      {
+        "nombre": "Arroz Extra",
+        "cantidad": 3,
+        "precio": 5.5
+      },
+      {
+        "nombre": "Azúcar Rubia",
+        "cantidad": 3,
+        "precio": 3.9
+      },
+      {
+        "nombre": "Leche Evaporada",
+        "cantidad": 3,
+        "precio": 3.8
+      },
+      {
+        "nombre": "Aceite Vegetal",
+        "cantidad": 3,
+        "precio": 8.5
+      },
+      {
+        "nombre": "Fideos Spaghetti",
+        "cantidad": 3,
+        "precio": 3.2
+      },
+      {
+        "nombre": "Sal de Mesa",
+        "cantidad": 3,
+        "precio": 1.2
+      },
+      {
+        "nombre": "Frijoles",
+        "cantidad": 3,
+        "precio": 4
+      }
+    ]
+  }
+]
