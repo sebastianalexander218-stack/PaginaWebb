@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abarrotes Flor - {% block title %}Tienda{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVZKJvLpOiAC95AOTzK1GfCKrVR6VxStjBfg&s" class="logo">
+        <div>
+            <h1>ABARROTES FLOR</h1>
+            <h2>Frescura y calidad para tu hogar</h2>
+        </div>
+    </header>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-links">
+            <a onclick="irA('inicio')" id="btn-inicio" class="nav-btn active">Inicio</a>
+            <a onclick="irA('nosotros')" id="btn-nosotros" class="nav-btn">Nosotros</a>
+            <a onclick="irA('productos')" id="btn-productos" class="nav-btn">Productos</a>
+            <span class="cart-icon-container" onclick="toggleCarrito()">
+                🛒 Carrito
+                <span id="cart-badge" class="cart-badge">0</span>
+            </span>
+        </div>
+
+        <!-- Bloque de autenticación -->
+        {% block auth %}{% endblock %}
+    </nav>
+
+    <!-- Modal del carrito -->
+    <div id="carrito-modal">
+        <div class="carrito-header">
+            <h2>Tu Carrito</h2>
+            <button class="cerrar-carrito" onclick="toggleCarrito()">&times;</button>
+        </div>
+        <div class="carrito-items" id="carrito-items">
+            <div class="carrito-vacio">El carrito está vacío</div>
+        </div>
+        <div class="carrito-footer">
+            <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+                <input type="text" id="cliente-nombre" placeholder="Tu nombre *" 
+                       style="flex:1; padding:10px; border-radius:12px; border:1px solid #ccc;">
+                <input type="text" id="cliente-telefono" placeholder="Teléfono *" 
+                       style="flex:1; padding:10px; border-radius:12px; border:1px solid #ccc;">
+            </div>
+            <div class="carrito-total" id="carrito-total">Total: S/ 0.00</div>
+            <div style="display:flex; gap:10px;">
+                <button onclick="finalizarCompra()" 
+                        style="flex:2; background:linear-gradient(135deg, #2a6e3f, #3c8c4a); color:white; border:none; padding:12px; border-radius:25px; font-weight:700; cursor:pointer;">
+                    ✅ Confirmar Compra
+                </button>
+                <button onclick="vaciarCarrito()" 
+                        style="flex:1; background:#e74c3c; color:white; border:none; padding:12px; border-radius:25px; font-weight:700; cursor:pointer;">
+                    Vaciar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <p><strong>Abarrotes Flor © 2026</strong></p>
+        <p>Av. Santa Rosa de Lima - Lima</p>
+        <p>Teléfono: 918-787-936</p>
+        <p>Horario: Lunes a Sábado de 7:00 AM a 9:00 PM</p>
+    </footer>
+
+    <!-- Scripts al final -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // Inicialización de navegación y carrito
+        if (typeof irA === 'function') {
+            irA('inicio');
+        }
+        // Inicialización de la tabla de clientes (si existe)
+        if (typeof renderTabla === 'function' && document.getElementById('cuerpo-tabla')) {
+            var clientes = [];
+            var nextId = 1;
+            renderTabla(clientes);
+        }
+    </script>
+</body>
+</html>
