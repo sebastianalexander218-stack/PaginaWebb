@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="margin:0; color: #2a6e3f;">Panel de Administración</h2>
+        <a href="/" style="background:#2a6e3f; color:white; padding:10px 20px; border-radius:25px; text-decoration:none; font-weight:600;">
+            ← Volver a la tienda
+        </a>
+    </div>
+
+    <!-- BOTONES DE NAVEGACIÓN RÁPIDA -->
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:25px;">
+        <a href="/admin/productos" style="background:#c89a3e; color:white; padding:10px 20px; border-radius:25px; text-decoration:none; font-weight:600;">
+            📦 Gestionar Productos
+        </a>
+        <a href="/admin/productos/agregar" style="background:#54a358; color:white; padding:10px 20px; border-radius:25px; text-decoration:none; font-weight:600;">
+            ➕ Agregar Producto
+        </a>
+        <a href="/" style="background:#2980b9; color:white; padding:10px 20px; border-radius:25px; text-decoration:none; font-weight:600;">
+            👥 Ver Clientes
+        </a>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <h3>Productos</h3>
+            <div class="valor">{{ total_productos }}</div>
+            <div class="referencia">+{{ variacion_productos }} vs. inicio</div>
+        </div>
+        <div class="kpi-card">
+            <h3>Precio promedio</h3>
+            <div class="valor">S/ {{ "%.2f"|format(precio_promedio) }}</div>
+            <div class="referencia">Meta: S/ 5.50</div>
+        </div>
+        <div class="kpi-card">
+            <h3>Clientes</h3>
+            <div class="valor">{{ total_clientes }}</div>
+            <div class="referencia">Objetivo: 50</div>
+        </div>
+        <div class="kpi-card">
+            <h3>Ventas del mes</h3>
+            <div class="valor">S/ {{ "%.2f"|format(ventas_mes) }}</div>
+            <div class="referencia">Mes anterior: S/ 0.00</div>
+        </div>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-box">
+            <h3>Ventas últimos 7 días</h3>
+            <div style="position: relative; height: 260px;">
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h3>Registros Recientes</h3>
+            <div style="position: relative; height: 260px;">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="seccion">
+        <h2>Últimos Clientes Registrados</h2>
+        <table>
+            <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Dirección</th></tr></thead>
+            <tbody>
+                {% for c in ultimos_clientes %}
+                <tr><td>{{ c.id }}</td><td>{{ c.nombre }}</td><td>{{ c.email }}</td><td>{{ c.telefono }}</td><td>{{ c.direccion }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/" class="btn-dash">Ver todos los clientes</a>
+    </div>
+
+    <div class="seccion">
+        <h2>Últimos Productos Agregados</h2>
+        <table>
+            <thead><tr><th>ID</th><th>Imagen</th><th>Nombre</th><th>Descripción</th><th>Precio</th></tr></thead>
+            <tbody>
+                {% for p in ultimos_productos %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td><img src="{{ p.imagen }}" class="img-mini" onerror="this.src='https://via.placeholder.com/40'"></td>
+                    <td>{{ p.nombre }}</td>
+                    <td>{{ p.descripcion[:50] }}</td>
+                    <td>S/ {{ p.precio }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/admin/productos" class="btn-dash">Gestionar productos</a>
+    </div>
+
+    <div class="actualizacion">Última actualización: {{ hora_actual }}</div>
+</div>
+
+<script>
+    // ===== DATOS EN FORMATO JSON =====
+    const dias = JSON.parse('{{ dias_json|safe }}');
+    const ventasDiarias = JSON.parse('{{ ventas_diarias_json|safe }}');
+    const nuevosClientes = JSON.parse('{{ nuevos_clientes_json|safe }}');
+    const nuevosProductos = JSON.parse('{{ nuevos_productos_json|safe }}');
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gráfico de líneas
+        const ctxLine = document.getElementById('lineChart').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: dias,
+                datasets: [{
+                    label: 'Ventas (S/)',
+                    data: ventasDiarias,
+                    borderColor: '#2a6e3f',
+                    backgroundColor: 'rgba(42, 110, 63, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Gráfico de barras
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: dias,
+                datasets: [
+                    {
+                        label: 'Nuevos Clientes',
+                        data: nuevosClientes,
+                        backgroundColor: '#c89a3e'
+                    },
+                    {
+                        label: 'Nuevos Productos',
+                        data: nuevosProductos,
+                        backgroundColor: '#2a6e3f'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
