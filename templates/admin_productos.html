@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Administrar Productos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Administrar Productos</h1>
+    <a href="/admin/productos/agregar" class="btn-add">+ Agregar producto</a>
+    <table>
+        <thead>
+            <tr><th>ID</th><th>Imagen</th><th>Nombre</th><th>Descripción</th><th>Precio</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>
+            {% for p in productos %}
+            <tr>
+                <td>{{ p.id }}</td>
+                <td><img src="{{ p.imagen }}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;"></td>
+                <td>{{ p.nombre }}</td>
+                <td>{{ p.descripcion }}</td>
+                <td>S/ {{ p.precio }}</td>
+                <td>
+                    <a href="/admin/productos/editar/{{ p.id }}" class="btn-edit">Editar</a>
+                    <a href="/admin/productos/eliminar/{{ p.id }}" class="btn-delete" onclick="return confirm('¿Eliminar {{ p.nombre }}?')">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/" class="volver">← Volver a la tienda</a>
+</div>
+{% endblock %}
