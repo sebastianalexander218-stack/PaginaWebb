@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "nombre": "Manzana",
+    "descripcion": "Manzanas rojas dulces",
+    "precio": 3.5,
+    "imagen": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTefUHgejxyLcdttT_ovpNnkWpHNzXHDsN9RQ&s"
+  },
+  {
+    "id": 2,
+    "nombre": "Plátano",
+    "descripcion": "Plátanos de seda",
+    "precio": 2.0,
+    "imagen": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStP3GhAe2hFpPDHhYRSFers5V2xidAaDkUJw&s"
+  },
+  {
+    "id": 3,
+    "nombre": "Leche Entera",
+    "descripcion": "Leche pasteurizada",
+    "precio": 4.2,
+    "imagen": "https://media.falabella.com/tottusPE/43548139_1/w=1500,h=1500,fit=cover"
+  }
+]
