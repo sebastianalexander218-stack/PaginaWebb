@@ -29,12 +29,3 @@ Aplicación web para la gestión de una tienda de abarrotes, con carrito de comp
 - **Servidor producción**: Gunicorn
 - **Despliegue**: Render
 
----
-
-## 📦 Instalación local
-
-### 1. Clonar el repositorio
-
-```bash
-git clone https://github.com/tu-usuario/abarrotes-flor.git
-cd abarrotes-flor
