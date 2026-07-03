@@ -1,0 +1,963 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block auth %}
+    {% if usuario_autenticado %}
+    <div style="display:flex; gap:10px; align-items:center;">
+        <span class="user-welcome">¡Hola, alex@123!</span>
+        <a href="/dashboard" class="nav-btn">Dashboard</a>
+        <a href="/admin/productos" class="nav-btn">Admin Productos</a>
+        <a href="/logout" class="nav-btn">Cerrar sesión</a>
+    </div>
+    {% else %}
+    <div style="display:flex; gap:8px; align-items:center;">
+        <form class="login-form" method="POST" style="display:flex; gap:8px;">
+            <input type="email" name="email" placeholder="Correo" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <button type="submit">Ingresar</button>
+        </form>
+        <a href="/registrarse" class="nav-btn">Registrarse</a>
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if mensaje_error %}
+    <div class="alert-error">{{ mensaje_error }}</div>
+    {% endif %}
+
+    <!-- PANEL DE ADMINISTRACIÓN DE CLIENTES (solo si autenticado) -->
+    {% if usuario_autenticado %}
+    <section class="panel-admin" id="panel-admin-section">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0;">Panel de Administración — Gestión de Clientes</h2>
+            <button onclick="togglePanel()" id="btn-toggle-panel"
+                style="background:#2a6e3f; color:white; border:none; padding:8px 16px; border-radius:25px; cursor:pointer; font-weight:600; font-size:13px; transition:0.2s;">
+                ▲ Colapsar
+            </button>
+        </div>
+
+        <div id="contenido-panel">
+
+            <div style="margin-bottom:35px;">
+                <h3 style="color:#2a6e3f; margin-bottom:15px; font-size:18px;">
+                    Clientes Registrados desde la Web
+                    <span style="background:#2a6e3f; color:white; border-radius:20px; padding:2px 12px; font-size:14px; margin-left:8px;">{{ clientes_registrados|length }}</span>
+                </h3>
+                <div style="overflow-x:auto; border-radius:15px; box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+                    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+                        <thead>
+                            <tr style="background:#2a6e3f; color:white;">
+                                <th style="padding:14px 16px; text-align:left;">#</th>
+                                <th style="padding:14px 16px; text-align:left;">Nombre</th>
+                                <th style="padding:14px 16px; text-align:left;">Email</th>
+                                <th style="padding:14px 16px; text-align:left;">Teléfono</th>
+                                <th style="padding:14px 16px; text-align:left;">Dirección</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in clientes_registrados %}
+                            <tr class="{{ loop.cycle('fila-par', 'fila-impar') }}" style="border-bottom:1px solid #e0e0e0;">
+                                <td style="padding:12px 14px;">{{ c.id }}</td>
+                                <td style="padding:12px 14px; font-weight:600;">{{ c.nombre }}</td>
+                                <td style="padding:12px 14px;">{{ c.email }}</td>
+                                <td style="padding:12px 14px;">{{ c.telefono }}</td>
+                                <td style="padding:12px 14px;">{{ c.direccion }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" style="padding:20px; text-align:center; color:#888;">Aún no hay clientes registrados desde la web.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <hr style="border:none; border-top:2px dashed #b2d8b5; margin-bottom:28px;">
+
+            <h3 style="color:#2a6e3f; margin-bottom:18px; font-size:18px;">Gestión Manual de Clientes</h3>
+
+            <div style="margin-bottom:25px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                <input
+                    type="text"
+                    id="buscar-cliente"
+                    placeholder="Buscar por nombre o teléfono..."
+                    oninput="buscarCliente()"
+                    style="padding:10px 16px; border:1.5px solid #2a6e3f; border-radius:25px; outline:none; min-width:250px; font-size:14px; font-family:'Poppins',sans-serif; background:#fafafa;"
+                >
+                <button onclick="abrirModalAgregar()" style="background:linear-gradient(135deg, #2a6e3f, #3c8c4a); color:white; border:none; padding:10px 20px; border-radius:25px; cursor:pointer; font-weight:600; font-size:14px; transition:0.2s; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+                    + Agregar Cliente
+                </button>
+            </div>
+
+            <div style="overflow-x:auto; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
+                <table id="tabla-clientes" style="width:100%; border-collapse:collapse; font-size:14px;">
+                    <thead>
+                        <tr style="background:#2a6e3f; color:white;">
+                            <th style="padding:12px 14px; text-align:left;">#</th>
+                            <th style="padding:12px 14px; text-align:left;">Nombre</th>
+                            <th style="padding:12px 14px; text-align:left;">Teléfono</th>
+                            <th style="padding:12px 14px; text-align:left;">Dirección</th>
+                            <th style="padding:12px 14px; text-align:center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla"></tbody>
+                </table>
+                <p id="sin-resultados" style="display:none; color:#888; text-align:center; padding:25px;">No se encontraron clientes.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <div id="modal-cliente" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; backdrop-filter: blur(3px);">
+        <div style="background:white; padding:35px; border-radius:20px; width:420px; max-width:95%; box-shadow:0 15px 40px rgba(0,0,0,0.2);">
+            <h3 id="modal-titulo" style="color:#2a6e3f; margin-bottom:22px; font-size:22px; font-weight:700;">Agregar Cliente</h3>
+
+            <label style="font-weight:600; font-size:13px; color:#555;">Nombre completo *</label><br>
+            <input type="text" id="inp-nombre" placeholder="Ej: Juan Perez"
+                style="width:100%; padding:10px 14px; border:1.5px solid #ddd; border-radius:12px; margin:6px 0 16px; outline:none; font-size:14px; font-family:'Poppins',sans-serif; background:#fafafa;">
+
+            <label style="font-weight:600; font-size:13px; color:#555;">Teléfono *</label><br>
+            <input type="text" id="inp-telefono" placeholder="Ej: 987654321"
+                style="width:100%; padding:10px 14px; border:1.5px solid #ddd; border-radius:12px; margin:6px 0 16px; outline:none; font-size:14px; font-family:'Poppins',sans-serif; background:#fafafa;">
+
+            <label style="font-weight:600; font-size:13px; color:#555;">Dirección</label><br>
+            <input type="text" id="inp-direccion" placeholder="Ej: Av. Lima 123"
+                style="width:100%; padding:10px 14px; border:1.5px solid #ddd; border-radius:12px; margin:6px 0 22px; outline:none; font-size:14px; font-family:'Poppins',sans-serif; background:#fafafa;">
+
+            <div id="modal-error" style="display:none; background:#f8d7da; color:#842029; padding:10px 14px; border-radius:10px; margin-bottom:16px; font-size:13px; border-left:4px solid #e74c3c;"></div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button onclick="cerrarModal()" style="background:#eee; color:#333; border:none; padding:10px 20px; border-radius:25px; cursor:pointer; font-weight:600; transition:0.2s;">Cancelar</button>
+                <button onclick="guardarCliente()" style="background:linear-gradient(135deg, #2a6e3f, #3c8c4a); color:white; border:none; padding:10px 20px; border-radius:25px; cursor:pointer; font-weight:600; transition:0.2s; box-shadow:0 4px 10px rgba(0,0,0,0.1);">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-eliminar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; backdrop-filter: blur(3px);">
+        <div style="background:white; padding:35px; border-radius:20px; width:360px; max-width:95%; box-shadow:0 15px 40px rgba(0,0,0,0.2); text-align:center;">
+            <h3 style="color:#b22222; margin-bottom:12px;">¿Eliminar cliente?</h3>
+            <p id="confirmar-nombre" style="color:#555; margin-bottom:25px; font-size:16px;"></p>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button onclick="cerrarModalEliminar()" style="background:#eee; color:#333; border:none; padding:10px 22px; border-radius:25px; cursor:pointer; font-weight:600; transition:0.2s;">Cancelar</button>
+                <button onclick="confirmarEliminar()" style="background:#c0392b; color:white; border:none; padding:10px 22px; border-radius:25px; cursor:pointer; font-weight:600; transition:0.2s; box-shadow:0 4px 10px rgba(192,57,43,0.3);">Eliminar</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+   <div id="vista-inicio" class="pagina-virtual activa">
+    <section>
+        <h2>Ofertas de la Semana</h2>
+        <p>Aprovecha nuestros combos especiales y ahorra al máximo en las compras para tu hogar.</p>
+
+        <div class="ofertas-grid">
+            <div class="oferta-card">
+                <span class="badge-oferta">COMBO DESAYUNO</span>
+                <h3>Leche + Avena Integral</h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt8Llc1gNE6KZIV0lBQyQv7PhccymdP0vtN7dPv2rO3lQqdb0aeE6nwCU&s=10" alt="Leche y avena">
+                <p>Ideal para empezar tus mañanas con toda la energía.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 9.50</span>
+                    <span class="precio-ahora">S/ 7.90</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Combo</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">OFERTA DE LOCURA</span>
+                <h3>Kilo de Mandarina Fresca</h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTOUPSZyk9my1mrFIDhdzvqnbZfFTZH9LcKOZJx2NruQ&s=10" alt="Mandarina">
+                <p>Recién traídas del campo, dulces y jugosas.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 4.50</span>
+                    <span class="precio-ahora">S/ 2.90</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Oferta</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">COMBO LIMPIEZA</span>
+                <h3>Detergente + Lavavajillas</h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkfNzKDtk3_10gQK_lQCi7p6GyCWGGbdS3jyhhksIwgMLcB-YxlkyS1zo&s=10" alt="Detergente y lavavajillas">
+                <p>Los mejores aliados para mantener tu hogar impecable.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 16.00</span>
+                    <span class="precio-ahora">S/ 13.50</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Combo</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">COMBO ESCOLAR</span>
+                <h3>Galletas + Jugo + Fruta</h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGmtIzLGa-bc6e09FEzRR2H-6IaH190891r_CU11Trrg&s=10" alt="Galletas, jugo y fruta">
+                <p>El combo perfecto para la lonchera de tus hijos.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 8.00</span>
+                    <span class="precio-ahora">S/ 6.50</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Combo</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">OFERTA DE LOCURA</span>
+                <h3>Papa x Kilo + Cebolla + Tomate</h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpJkIDHtcL4Y3EMiPR5xW1amgNtm7dTJFZvzbiyfMVwA&s=10" alt="Papa, cebolla y tomate">
+                <p>Base de toda buena cocina peruana al mejor precio.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 7.00</span>
+                    <span class="precio-ahora">S/ 5.50</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Oferta</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">COMBO PANADERÍA</span>
+                <h3>Pan Francés x6 + Mantequilla</h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuyo55ezBexG6zjnLc36oEz-63gRo_J2C1XhJKJQdMtA&s=10" alt="Pan francés y mantequilla">
+                <p>Desayuno clásico y delicioso para toda la familia.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 10.00</span>
+                    <span class="precio-ahora">S/ 7.90</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Combo</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">OFERTA DE LOCURA</span>
+                <h3>Arroz 1kg + Frijoles 500g</h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCSxz_GHW2A5oSh6fzcVi3Ku1YbXtqfUAwSqz4CFU4kA&s=10" alt="Arroz y frijoles">
+                <p>La dupla peruana infaltable para el almuerzo de la semana.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 11.00</span>
+                    <span class="precio-ahora">S/ 8.90</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Oferta</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">COMBO SNACK</span>
+                <h3>Chifles +  Gaseosa </h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPAYGGqRZ6LbON87i8wu3wG5zm881uvOKasqTGoRiYpk04ChJfukVxhWg&s=10" alt="Chifles, maní y gaseosa">
+                <p>El combo ideal para disfrutar en la playa.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 7.00</span>
+                    <span class="precio-ahora">S/ 5.50</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Combo</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">COMBO FUTBOLERO</span>
+                <h3>Cerveza + papitas</h3>
+                <img src="https://static.vecteezy.com/system/resources/previews/003/723/633/large_2x/potato-chips-in-a-bowl-with-two-glasses-of-beer-photo.jpg" alt="Fideos, salsa y queso">
+                <p>Combo perfecto para compartir con tus amigos mientras ven el mundial</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 26.50</span>
+                    <span class="precio-ahora">S/ 20.00</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Combo</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">COMBO SALUDABLE</span>
+                <h3>Quinoa + Palta + Limón</h3>
+                <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300" alt="Quinoa, palta y limón">
+                <p>Energía natural para tus mañanas.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 12.00</span>
+                    <span class="precio-ahora">S/ 9.90</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Combo</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">OFERTA DE LOCURA</span>
+                <h3>Sandía + Melón x Kilo</h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQO8-X9ytmOsPt1q1EYSWa0P5l_FA4as5tFnQIeQnEUIw&s=10" alt="Sandía y melón">
+                <p>Las frutas más refrescantes del verano.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 8.00</span>
+                    <span class="precio-ahora">S/ 5.90</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Oferta</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">COMBO DESPENSA</span>
+                <h3>Atún + Mayonesa + Pan</h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOaEeBsjvBgLeWV8C7zTZuSEkd-YcmgkkbIzeA51MPwA&s" alt="Atún, mayonesa y pan">
+                <p>Un almuerzo rápido y nutritivo.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 15.00</span>
+                    <span class="precio-ahora">S/ 12.50</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Combo</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">OFERTA DE LOCURA</span>
+                <h3>Yogurt + Granola + Miel</h3>
+                <img src="https://thumbs.dreamstime.com/b/verter-miel-en-el-taz%C3%B3n-de-yogur-griego-con-granola-harina-avena-nueces-ar%C3%A1ndano-azul-chia-semillas-desayuno-saludable-276179081.jpg" alt="Yogurt, granola y miel">
+                <p>El desayuno perfecto para deportistas.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 10.00</span>
+                    <span class="precio-ahora">S/ 7.90</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Oferta</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">COMBO PANADERÍA</span>
+                <h3>Pan Integral + Mantequilla + Mermelada</h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_eJOUDOwj4-Nps0aeOtoG_zvjmAQHaZOEh0LK59cjeg&s=10" alt="Pan integral, mantequilla y mermelada">
+                <p>Desayuno saludable y delicioso.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 11.00</span>
+                    <span class="precio-ahora">S/ 8.90</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Combo</a>
+            </div>
+
+            <div class="oferta-card">
+                <span class="badge-oferta">COMBO BEBIDAS</span>
+                <h3>Gaseosa 1.5L + Hielo + Vasos</h3>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3mypvTI2uXg1Aex-2dmTMXXQ1jS1IIelGDqYXeEE5kw&s=10" alt="Gaseosa, hielo y vasos">
+                <p>Perfecto para compartir con amigos.</p>
+                <div style="margin-top: 15px;">
+                    <span class="precio-antes">S/ 9.50</span>
+                    <span class="precio-ahora">S/ 7.50</span>
+                </div>
+                <a href="#" class="btn-adquirir">Pedir Combo</a>
+            </div>
+        </div>
+    </section>
+</div>
+
+    <div id="vista-nosotros" class="pagina-virtual">
+        <section>
+            <h2>Sobre Nosotros</h2>
+            <div class="nosotros">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAYJG_LADeNWlACrAATh0kwE0dhm4PQRqAgg&s">
+                <p>En Abarrotes Flor ofrecemos productos frescos, lácteos, abarrotes y artículos esenciales para tu hogar con la mejor atención y los mejores precios.</p>
+            </div>
+        </section>
+        <section>
+            <h2>¿Por qué elegirnos?</h2>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:25px; margin-top:25px;">
+                <div style="text-align:center; padding:30px 25px; background:#f9fdf9; border-radius:20px; border:1px solid #c8e6c9;">
+                    <div style="font-size:42px; margin-bottom:14px;">🌿</div>
+                    <h3 style="color:#2a6e3f; margin-bottom:10px; font-size:18px;">Productos Frescos</h3>
+                    <p style="color:#555; line-height:1.7;">Seleccionamos cada producto directamente con los mejores proveedores de Lima y regiones.</p>
+                </div>
+                <div style="text-align:center; padding:30px 25px; background:#f9fdf9; border-radius:20px; border:1px solid #c8e6c9;">
+                    <div style="font-size:42px; margin-bottom:14px;">💰</div>
+                    <h3 style="color:#2a6e3f; margin-bottom:10px; font-size:18px;">Precios Justos</h3>
+                    <p style="color:#555; line-height:1.7;">Ofrecemos los mejores precios del barrio con ofertas semanales para que tu bolsillo alcance más.</p>
+                </div>
+                <div style="text-align:center; padding:30px 25px; background:#f9fdf9; border-radius:20px; border:1px solid #c8e6c9;">
+                    <div style="font-size:42px; margin-bottom:14px;">🤝</div>
+                    <h3 style="color:#2a6e3f; margin-bottom:10px; font-size:18px;">Atención Cercana</h3>
+                    <p style="color:#555; line-height:1.7;">Somos un negocio familiar que conoce a sus clientes. Te atendemos con cariño y confianza.</p>
+                </div>
+                <div style="text-align:center; padding:30px 25px; background:#f9fdf9; border-radius:20px; border:1px solid #c8e6c9;">
+                    <div style="font-size:42px; margin-bottom:14px;">🏪</div>
+                    <h3 style="color:#2a6e3f; margin-bottom:10px; font-size:18px;">Local Propio</h3>
+                    <p style="color:#555; line-height:1.7;">Contamos con un local amplio y ordenado en Av. Santa Rosa de Lima, fácil de encontrar.</p>
+                </div>
+                <div style="text-align:center; padding:30px 25px; background:#f9fdf9; border-radius:20px; border:1px solid #c8e6c9;">
+                    <div style="font-size:42px; margin-bottom:14px;">⏰</div>
+                    <h3 style="color:#2a6e3f; margin-bottom:10px; font-size:18px;">Horario Amplio</h3>
+                    <p style="color:#555; line-height:1.7;">Abrimos de lunes a sábado de 7:00 AM a 9:00 PM para que siempre nos encuentres disponibles.</p>
+                </div>
+                <div style="text-align:center; padding:30px 25px; background:#f9fdf9; border-radius:20px; border:1px solid #c8e6c9;">
+                    <div style="font-size:42px; margin-bottom:14px;">📦</div>
+                    <h3 style="color:#2a6e3f; margin-bottom:10px; font-size:18px;">Variedad Total</h3>
+                    <p style="color:#555; line-height:1.7;">Desde frutas y verduras hasta lácteos, abarrotes, snacks y productos de limpieza en un solo lugar.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="vista-productos" class="pagina-virtual">
+        <section>
+            <h2>Nuestros Productos</h2>
+            <p>Los productos con la mayor frescura y calidad directo a tu mesa.</p>
+
+            <div class="ofertas-grid">
+                <!-- ========== PRODUCTOS ESTÁTICOS (60 PRODUCTOS) ========== -->
+                <div class="oferta-card">
+                    <span class="badge-oferta">FRUTA FRESCA</span>
+                    <h3>Manzana</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTefUHgejxyLcdttT_ovpNnkWpHNzXHDsN9RQ&s" alt="manzana">
+                    <p>Manzanas seleccionadas, dulces y crujientes.</p>
+                    <p class="precio-producto">S/ 3.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">FRUTA FRESCA</span>
+                    <h3>Plátano</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStP3GhAe2hFpPDHhYRSFers5V2xidAaDkUJw&s" alt="platano">
+                    <p>Plátanos ricos en potasio en su madurez ideal.</p>
+                    <p class="precio-producto">S/ 2.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">FRUTA FRESCA</span>
+                    <h3>Mandarina</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQuYcbfyDFJhMYa3Kv3RjnlT_m_fjhVKH8kwQ&s" alt="mandarina">
+                    <p>Mandarinas jugosas y dulces, recién llegadas.</p>
+                    <p class="precio-producto">S/ 2.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">FRUTA FRESCA</span>
+                    <h3>Naranja</h3>
+                    <img src="https://img.freepik.com/vector-gratis/fondo-naranja-acuarela_52683-10330.jpg?w=360" alt="naranja">
+                    <p>Naranjas para jugo o para comer, muy frescas.</p>
+                    <p class="precio-producto">S/ 3.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">FRUTA FRESCA</span>
+                    <h3>Papaya</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaAXtZXW0NwXfeThZW9BbWaT36At6cOjfv4Q&s" alt="papaya">
+                    <p>Papaya madura y dulce, ideal para el desayuno.</p>
+                    <p class="precio-producto">S/ 5.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">FRUTA FRESCA</span>
+                    <h3>Mango</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSe4OzPMUZFtQ-TJxNf5k37h07WhwkJjgkezQ&s" alt="mango">
+                    <p>Mangos jugosos de temporada, dulces y aromáticos.</p>
+                    <p class="precio-producto">S/ 4.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">FRUTA FRESCA</span>
+                    <h3>Uva</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTnxd34tV-o8Jj4jzMzIgeV-rKRk0UU5RCRg&s" alt="uva">
+                    <p>Uvas verdes sin pepa, frescas y crujientes.</p>
+                    <p class="precio-producto">S/ 6.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">FRUTA FRESCA</span>
+                    <h3>Fresa</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe2kS5KTJqHvC9KQjVwFXsTL8PTJryKhSB4g&s" alt="fresa">
+                    <p>Fresas seleccionadas, perfectas para jugos y postres.</p>
+                    <p class="precio-producto">S/ 4.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">FRUTA FRESCA</span>
+                    <h3>Piña</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe7looVC_9fWTCfWNkiEWjQQ1oY3Kqc1sIKw&s" alt="piña">
+                    <p>Piña entera o en rodajas, dulce y tropical.</p>
+                    <p class="precio-producto">S/ 5.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">FRUTA FRESCA</span>
+                    <h3>Pera</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUIBpLacU-to2ZYt1K1ca787cJRml8xMmd-w&s" alt="pera">
+                    <p>Peras suaves y jugosas, ideales para la lonchera.</p>
+                    <p class="precio-producto">S/ 3.80</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">VERDURA</span>
+                    <h3>Tomate</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZCXxDyXhL2MDRrGS8h5re1vNdYwqa9DvuHg&s" alt="tomate">
+                    <p>Tomates frescos de primera calidad para tus guisos.</p>
+                    <p class="precio-producto">S/ 2.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">VERDURA</span>
+                    <h3>Cebolla</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTPFLV-d-xeWVqv6UEpttSs8ARIgH0b6niuQ&s" alt="cebolla">
+                    <p>Cebollas blancas y rojas para tus preparaciones.</p>
+                    <p class="precio-producto">S/ 1.80</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">VERDURA</span>
+                    <h3>Papa</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4lkwrluya9UQS4RcO5N6YJYNrRLecOLekIQ&s" alt="papa">
+                    <p>Papas peruanas de las mejores variedades.</p>
+                    <p class="precio-producto">S/ 2.20</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">VERDURA</span>
+                    <h3>Zanahoria</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDH74leA8h3ufNgIkjOCJJPzWFEvKcEAy2cQ&s" alt="zanahoria">
+                    <p>Zanahorias frescas y crujientes, ricas en vitaminas.</p>
+                    <p class="precio-producto">S/ 1.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">VERDURA</span>
+                    <h3>Lechuga</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzm8RNveW6_YmoZfMWjvAmE9A6UxGWqr-AKw&s" alt="lechuga">
+                    <p>Lechuga fresca para tus ensaladas diarias.</p>
+                    <p class="precio-producto">S/ 1.20</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">VERDURA</span>
+                    <h3>Espinaca</h3>
+                    <img src="https://www.gastronomiavasca.net/uploads/image/file/3368/espinacas.jpg" alt="espinaca">
+                    <p>Espinaca tierna, ideal para jugos y saltados.</p>
+                    <p class="precio-producto">S/ 1.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">VERDURA</span>
+                    <h3>Beterraga</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZ7nj6j1td97MgksoIpH8dlE4EtAyFZVmZDw&s" alt="beterraga">
+                    <p>Beterraga fresca, perfecta para ensaladas y jugos.</p>
+                    <p class="precio-producto">S/ 2.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">VERDURA</span>
+                    <h3>Pimiento</h3>
+                    <img src="https://plazavea.vteximg.com.br/arquivos/ids/226561-418-418/pimiento-morron.jpg" alt="pimiento">
+                    <p>Pimientos rojos y verdes para tus guisos y salsas.</p>
+                    <p class="precio-producto">S/ 2.80</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">VERDURA</span>
+                    <h3>Apio</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2WmhMbLIk7Oj7lSCplpxZ1UnWmEAYs6r78w&s" alt="apio">
+                    <p>Apio fresco, ideal para sopas y jugos verdes.</p>
+                    <p class="precio-producto">S/ 1.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">VERDURA</span>
+                    <h3>Pepino</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5R5jLKiqyJaBsMyHftLj9dKinvamEY47v0g&s" alt="pepino">
+                    <p>Pepinos frescos y crujientes, perfectos para ensaladas.</p>
+                    <p class="precio-producto">S/ 1.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LÁCTEOS</span>
+                    <h3>Leche Entera</h3>
+                    <img src="https://media.falabella.com/tottusPE/43548139_1/w=1500,h=1500,fit=cover" alt="leche entera">
+                    <p>Leche de vaca pura, cremosa y pasteurizada.</p>
+                    <p class="precio-producto">S/ 4.20</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LÁCTEOS</span>
+                    <h3>Yogurt Natural</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhj8HKSomAu92gEXHV02zKt88lrLAlqsi4WQ&s" alt="yogurt natural">
+                    <p>Yogurt cremoso sin azúcar, ideal para el desayuno.</p>
+                    <p class="precio-producto">S/ 5.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LÁCTEOS</span>
+                    <h3>Queso Fresco</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmtiamp3BMghqtvuHqtSxW8mNo9GL5R3XhcQ&s" alt=" queso fresco">
+                    <p>Queso blanco suave, perfecto para acompañar tus comidas.</p>
+                    <p class="precio-producto">S/ 7.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LÁCTEOS</span>
+                    <h3>Mantequilla</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm63WJ5_oW3bNhG_Ju35zyFWuhmuU60Dj13g&s" alt="mantequilla">
+                    <p>Mantequilla cremosa, ideal para repostería y cocina.</p>
+                    <p class="precio-producto">S/ 6.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LÁCTEOS</span>
+                    <h3>Leche Evaporada</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqhiCw9JX1XfGHth7vhh2aa5FKDK50FI60VA&s" alt="leche evaporada">
+                    <p>Leche evaporada para preparar sopas, arroz con leche y más.</p>
+                    <p class="precio-producto">S/ 3.80</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">ABARROTES</span>
+                    <h3>Arroz Extra</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSc_q2xxLjOKNxlOF3yV64-VWYri5xJ3D5yTg&s" alt="arroz extra">
+                    <p>Arroz blanco de grano largo, cocción perfecta.</p>
+                    <p class="precio-producto">S/ 5.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">ABARROTES</span>
+                    <h3>Azúcar Rubia</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5Sf99Kd8Tv8J_9zAYudffJMjCqe9LF0VsUQ&s" alt="azucar rubia">
+                    <p>Azúcar rubia para endulzar tus bebidas y postres.</p>
+                    <p class="precio-producto">S/ 3.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">ABARROTES</span>
+                    <h3>Aceite Vegetal</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQuDcamT4KrbJfCMiTJ-rshq2j9sdm4Exiipg&s" alt="aceite vegetal">
+                    <p>Aceite vegetal para freír y cocinar sin problema.</p>
+                    <p class="precio-producto">S/ 8.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">ABARROTES</span>
+                    <h3>Fideos Spaghetti</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQeWQoWPX31fTydcstq9IZnfwin6ZYxbu6tw&s" alt="fideos spaghetti">
+                    <p>Fideos largos de sémola, ideales para pastas y guisos.</p>
+                    <p class="precio-producto">S/ 3.20</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">ABARROTES</span>
+                    <h3>Sal de Mesa</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0xLJeebtlNE44kzkNenDORV9qOBKNRXGyzQ&s" alt="sal de mesa">
+                    <p>Sal refinada yodada para sazonar tus comidas.</p>
+                    <p class="precio-producto">S/ 1.20</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">ABARROTES</span>
+                    <h3>Lentejas</h3>
+                    <img src="https://plazavea.vteximg.com.br/arquivos/ids/27552452-418-418/995413.jpg" alt="lentejas">
+                    <p>Lentejas secas, ideales para sopas nutritivas.</p>
+                    <p class="precio-producto">S/ 4.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">ABARROTES</span>
+                    <h3>Frijoles</h3>
+                    <img src="https://plazavea.vteximg.com.br/arquivos/ids/27552442-418-418/3840.jpg" alt="frijoles">
+                    <p>Frijoles negros y canarios, perfectos para guisos.</p>
+                    <p class="precio-producto">S/ 4.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">ABARROTES</span>
+                    <h3>Avena en Hojuelas</h3>
+                    <img src="https://plazavea.vteximg.com.br/arquivos/ids/30578622-512-512/20281906.jpg" alt="avena hojuelas">
+                    <p>Avena integral en hojuelas para un desayuno energético.</p>
+                    <p class="precio-producto">S/ 5.20</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">ABARROTES</span>
+                    <h3>Harina de Trigo</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRre3u22pwQIQ-tHcQqEDcfDCpmdTJ-jDhAxQ&s" alt="harina de trigo">
+                    <p>Harina blanca para repostería y preparaciones caseras.</p>
+                    <p class="precio-producto">S/ 3.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">ABARROTES</span>
+                    <h3>Maicena</h3>
+                    <img src="https://oechsle.vteximg.com.br/arquivos/ids/1891043-1000-1000/image-6ebf9d5c43d94af6a03aadc0af3c619d.jpg?v=637495416279100000" alt="maicena">
+                    <p>Fécula de maíz para espesar salsas y preparar postres.</p>
+                    <p class="precio-producto">S/ 2.80</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">BEBIDAS</span>
+                    <h3>Agua de Mesa 625ml</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWiHJ4UPFSIQIl6tTRWujx-bCwjoRMBLvbbA&s" alt="agua de mesa">
+                    <p>Agua cielo sin gas, perfecta para mantenerte hidratado.</p>
+                    <p class="precio-producto">S/ 1.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">BEBIDAS</span>
+                    <h3>Gaseosa 1.5L</h3>
+                    <img src="https://sumon.com.pe/wp-content/uploads/2024/10/gasesosa-coca-cola-1-5lt.webp" alt="gaseosa 1.5L">
+                    <p>Gaseosa fría en distintos sabores para toda la familia.</p>
+                    <p class="precio-producto">S/ 5.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">BEBIDAS</span>
+                    <h3>Jugo de Naranja</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2uGvCgKi8GWZvfoagIK4-VI1YdSKX6MGI0A&s" alt="jugo de naranja">
+                    <p>Jugo de naranja natural exprimido en el momento.</p>
+                    <p class="precio-producto">S/ 3.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">BEBIDAS</span>
+                    <h3>Chicha Morada</h3>
+                    <img src="https://wongfood.vtexassets.com/arquivos/ids/807366/CHICHA-MORADA-XUMO-BOT-VIDRIO-1L-1-351711573.jpg?v=639016006110800000" alt="chicha morada">
+                    <p>Chicha morada preparada con maíz morado y especias.</p>
+                    <p class="precio-producto">S/ 6.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">BEBIDAS</span>
+                    <h3>Infusión de Manzanilla</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHLdbsNaiuIZD4EOHjxLZkYo-sbtu7B3jC9w&s" alt="manzanilla">
+                    <p>Bolsitas de manzanilla para una tarde relajante.</p>
+                    <p class="precio-producto">S/ 2.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LIMPIEZA</span>
+                    <h3>Detergente 500g</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-LDjjc1EHgRhR9sQvMcTJ1_dBw7utanz0mg&s" alt="detergente 500g">
+                    <p>Detergente en polvo ACE de alta eficacia para tu ropa.</p>
+                    <p class="precio-producto">S/ 7.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LIMPIEZA</span>
+                    <h3>Lavavajillas</h3>
+                    <img src="https://promart.vteximg.com.br/arquivos/ids/7993503-1000-1000/102500.jpg?v=638524264421330000" alt="lavajillas">
+                    <p>Lavavajillas líquido desengrasante, aromas variados.</p>
+                    <p class="precio-producto">S/ 4.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LIMPIEZA</span>
+                    <h3>Lejía 1L</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRx_R4V0qXV9HjiqLS_WuxiJM6EXLH9VJCjWw&s" alt="lejia 1L">
+                    <p>Lejía blanqueadora para desinfectar tu hogar.</p>
+                    <p class="precio-producto">S/ 3.20</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LIMPIEZA</span>
+                    <h3>Papel Higiénico x4</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2_xjdJ0T_fGhumDAdU5aHx1N1_GI8P6sIbw&s" alt="papel hugienico">
+                    <p>Papel higiénico suave y resistente, pack de 4 rollos.</p>
+                    <p class="precio-producto">S/ 6.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LIMPIEZA</span>
+                    <h3>Jabón de Barra</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4g0pG6wT5MHVlgOxcg-idT8JRof4Gqa097g&s" alt="jabon en barra">
+                    <p>Jabón antibacterial para manos y cuerpo.</p>
+                    <p class="precio-producto">S/ 2.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LIMPIEZA</span>
+                    <h3>Esponja de Cocina</h3>
+                    <img src="https://www.ferropolis.pe/cdn/shop/products/esponja-amarilla-lisa.jpg?v=1674145743" alt="esponja de cocina">
+                    <p>Esponja doble función para limpiar ollas y platos.</p>
+                    <p class="precio-producto">S/ 1.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">LIMPIEZA</span>
+                    <h3>Bolsas de Basura x10</h3>
+                    <img src="https://promart.vteximg.com.br/arquivos/ids/567575-1000-1000/23833.jpg?v=637393511424200000" alt="bolsa de basura">
+                    <p>Bolsas resistentes para basura doméstica, pack de 10.</p>
+                    <p class="precio-producto">S/ 3.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">SNACKS</span>
+                    <h3>Galletas de Vainilla</h3>
+                    <img src="https://plazavea.vteximg.com.br/arquivos/ids/29033244-450-450/243940.jpg?v=638501473521030000" alt="galletas de vainilla">
+                    <p>Galletas crujientes de vainilla, ideales para el café.</p>
+                    <p class="precio-producto">S/ 3.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">SNACKS</span>
+                    <h3>Chifles</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRw_pgy3mXYdwBDPxhe7Wu7Ksbur0qXGWdtqA&s" alt="chifles">
+                    <p>Chifles crujientes de plátano verde con sal sabor leche de tigre, snack peruano.</p>
+                    <p class="precio-producto">S/ 2.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">SNACKS</span>
+                    <h3>Maní Salado</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt7QT24xjGhdc8qm41N1Kvs-Fy1JedDJjMaw&s" alt="mani salado">
+                    <p>Maní tostado y salado, perfecto para picar.</p>
+                    <p class="precio-producto">S/ 3.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">SNACKS</span>
+                    <h3>Chocolate con Leche</h3>
+                    <img src="https://metroio.vtexassets.com/arquivos/ids/517940/Chocolate-con-Leche-Nestl-Classic-80g-1-260829.jpg?v=638470065747070000" alt="chocolate con leche">
+                    <p>Tableta de chocolate cremoso al leche.</p>
+                    <p class="precio-producto">S/ 4.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">SNACKS</span>
+                    <h3>Caramelos Surtidos</h3>
+                    <img src="https://metroio.vtexassets.com/arquivos/ids/512813/Caramelos-Arcor-Surtido-1kg-1-256166.jpg?v=638433669915630000" alt="caramelos surtidos">
+                    <p>Bolsa de caramelos surtidos para toda la familia.</p>
+                    <p class="precio-producto">S/ 9.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">CARNES</span>
+                    <h3>Pollo Entero</h3>
+                    <img src="https://metroio.vtexassets.com/arquivos/ids/290311/Pollo-Entero-Fresco-Metro-x-kg-2-183284.jpg?v=638179316343400000" alt="pollo entero">
+                    <p>Pollo fresco de granja, listo para preparar.</p>
+                    <p class="precio-producto">S/ 14.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">CARNES</span>
+                    <h3>Carne de Res</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxixH3zN265n1867ZCMK0-cflyRjQRJBAXXQ&s" alt="carne de res">
+                    <p>Carne de res seleccionada para guisos y bistecs.</p>
+                    <p class="precio-producto">S/ 22.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">CARNES</span>
+                    <h3>Jamonada</h3>
+                    <img src="https://metroio.vtexassets.com/arquivos/ids/371001/Jamonada-de-Cerdo-Rico-200g-1-16558145.jpg?v=638180587496400000" alt="jamonada">
+                    <p>Jamonada de cerdo en rodajas, ideal para sándwiches.</p>
+                    <p class="precio-producto">S/ 5.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">CARNES</span>
+                    <h3>Hot Dogs x6</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4aNlrLhyfzffLZhPNBAtbQuOk_C-SEDz8ZA&s" alt="hotdogs x6">
+                    <p>Salchichas de pollo y cerdo en pack de 6 unidades.</p>
+                    <p class="precio-producto">S/ 6.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">PANADERÍA</span>
+                    <h3>Pan de Molde</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSNyVjWFskJ-zu0UbXVkK0nOgzRBHwV4QQpQ&s" alt="pan de molde">
+                    <p>Pan de molde suave para sándwiches y tostadas.</p>
+                    <p class="precio-producto">S/ 5.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">PANADERÍA</span>
+                    <h3>Pan Francés x6</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuCrd8NnPqlSZOFkchPzqm5_8rDsOvNKvpRQ&s" alt="pan frances">
+                    <p>Pan francés crujiente recién horneado, pack de 6.</p>
+                    <p class="precio-producto">S/ 2.00</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">CONDIMENTOS</span>
+                    <h3>Ají Amarillo en Pasta</h3>
+                    <img src="https://plazavea.vteximg.com.br/arquivos/ids/29320941-450-450/1073429001.jpg?v=638591631832930000" alt="aji amarillo en pasta">
+                    <p>Pasta de ají amarillo peruano para dar sabor a tus guisos.</p>
+                    <p class="precio-producto">S/ 4.50</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">CONDIMENTOS</span>
+                    <h3>Mayonesa 400g</h3>
+                    <img src="https://peruvianboxofficial.com/cdn/shop/products/image_e9060667-3505-410c-9bba-0f77d50d8120_1200x1200.jpg?v=1619222464" alt="mayonesa 400g">
+                    <p>Mayonesa cremosa para ensaladas y sándwiches.</p>
+                    <p class="precio-producto">S/ 12.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">CONDIMENTOS</span>
+                    <h3>Salsa de Soja</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRs50VsXKbF1ZMlduTGiqCWaX5Rt6Dm-c_5bg&s" alt="salsa de soja">
+                    <p>Salsa de soja para dar sabor a saltados y marinados.</p>
+                    <p class="precio-producto">S/ 8.90</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                <div class="oferta-card">
+                    <span class="badge-oferta">CONDIMENTOS</span>
+                    <h3>Vinagre Blanco 500ml</h3>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQycYW4dZrpde_TaxdG0_HR7CkxN0T5YmlN8A&s" alt=" vinagre blanco 500ml">
+                    <p>Vinagre blanco para aderezar ensaladas y conservas.</p>
+                    <p class="precio-producto">S/ 3.40</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+
+                {% for p in productos_dinamicos %}
+                <div class="oferta-card">
+                    <span class="badge-oferta">Nuevo</span>
+                    <h3>{{ p.nombre }}</h3>
+                    <img src="{{ p.imagen }}" onerror="this.src='https://via.placeholder.com/150'">
+                    <p>{{ p.descripcion[:100] }}</p>
+                    <p class="precio-producto">S/ {{ p.precio }}</p>
+                    <a href="#" class="btn-adquirir">Pedir Producto</a>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+{% endblock %}
