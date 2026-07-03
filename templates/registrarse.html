@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Registrarse{% endblock %}
+
+{% block content %}
+<main style="display:flex; justify-content:center; padding:40px 20px;">
+    <div class="card">
+        <h2>Crear cuenta</h2>
+        <p class="sub">Regístrate para acceder a ofertas exclusivas</p>
+
+        {% if mensaje_ok %}
+        <div class="ok">{{ mensaje_ok }}</div>
+        {% endif %}
+        {% if mensaje_error %}
+        <div class="err">{{ mensaje_error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <label>Nombre completo *</label>
+            <input type="text" name="nombre" placeholder="Ej: María García" required>
+            <label>Correo electrónico *</label>
+            <input type="email" name="email" placeholder="Ej: maria@gmail.com" required>
+            <label>Teléfono *</label>
+            <input type="text" name="telefono" placeholder="Ej: 987654321" required>
+            <label>Dirección (opcional)</label>
+            <input type="text" name="direccion" placeholder="Ej: Av. Lima 456, Miraflores">
+            <button type="submit" class="btn">Registrarme</button>
+        </form>
+        <a href="/" class="volver">← Volver al inicio</a>
+    </div>
+</main>
+{% endblock %}
